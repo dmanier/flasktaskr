@@ -7,20 +7,21 @@
         <table>
             <tr>
                 <form action="{{ url_for('new_task') }}" method="post">
+                    {{ form.csrf_token }}
                     <td><label>Task Name:</label><input name="name" type="text"></td>
                     <td><label>Due Date</label><input name="due_date" type="text" width="120px"></td>
                     <td><label>Priority:</label>
                         <select name="priority" width="100px">
                             <option value="1">1</option>
-                            <option value="1">2</option>
-                            <option value="1">3</option>
-                            <option value="1">4</option>
-                            <option value="1">5</option>
-                            <option value="1">6</option>
-                            <option value="1">7</option>
-                            <option value="1">8</option>
-                            <option value="1">9</option>
-                            <option value="1">10</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
                         </select>
                     </td>
                     <td>&nbsp;&nbsp;<input class="button" type="submit" value="Save"></td>
