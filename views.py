@@ -43,6 +43,7 @@ def register():
 
 
 @app.route('/logout/')
+@login_required
 def logout():
     session.pop('logged_in', None)
     session.pop('user_id', None)
@@ -95,7 +96,7 @@ def complete(task_id):
     flash('The task was marked complete.')
     return redirect(url_for('tasks'))
 
-@app.route('/delete/<int:task_id>')
+@app.route('/delete/<int:task_id>/')
 @login_required
 def delete_entry(task_id):
     db.session.query(Task).filter_by(task_id=task_id).delete()
