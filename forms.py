@@ -26,3 +26,11 @@ class RegisterForm(Form):
     confirm = PasswordField(
         'Repeat Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')]
     )
+    
+class LoginForm(Form):
+    name = StringField(
+        'Username', validators=[DataRequired()]
+    )
+    password = PasswordField(
+        'Password', validators=[DataRequired()]
+    )
