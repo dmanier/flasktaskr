@@ -23,6 +23,13 @@ def login_required(test):
             return redirect(url_for('login'))
     return wrap
 
+def same_user(task_id):
+    task = db.session.query(Task).filter_by(task_id=task_id)
+    if session['user_id'] == task.first().user_id or session['role']=='admin':
+        return task
+    else:
+        return None
+
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     error = None
@@ -47,11 +54,14 @@ def register():
 def logout():
     session.pop('logged_in', None)
     session.pop('user_id', None)
+    session.pop('role', None)
     flash('Goodbye!')
     return redirect(url_for('login'))
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
+    if session.get('logged_in',False):
+        return redirect(url_for('tasks'))
     error = None
     form = LoginForm(request.form)
     if request.method == 'POST':
@@ -60,12 +70,11 @@ def login():
             if user is not None and user.password == request.form['password']:
                 session['logged_in'] = True
                 session['user_id'] = user.id
+                session['role'] = user.role
                 flash('Welcome!')
                 return redirect(url_for('tasks'))
             else:
                 error = 'Invalid username or password'
-        else:
-            error = 'Both fields are required.'
     return render_template('login.html', form=form, error=error)
 
 
@@ -91,23 +100,31 @@ def new_task():
 @app.route('/complete/<int:task_id>/')
 @login_required
 def complete(task_id):
-    db.session.query(Task).filter_by(task_id=task_id).update({"status":"0"})
-    db.session.commit()
-    flash('The task was marked complete.')
+    task = same_user(task_id)
+    if task:
+        task.update({'status':'0'})
+        db.session.commit()
+        flash('The task was marked complete.')
+    else:
+        flash('You can only update tasks that belong to you.')
     return redirect(url_for('tasks'))
 
 @app.route('/delete/<int:task_id>/')
 @login_required
 def delete_entry(task_id):
-    db.session.query(Task).filter_by(task_id=task_id).delete()
-    db.session.commit()
-    flash('The task was deleted.')
+    task = same_user(task_id)
+    if task:
+        task.delete()
+        db.session.commit()
+        flash('The task was deleted.')
+    else:
+        flash('You can only update tasks that belong to you.')
     return redirect(url_for('tasks'))
 
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash('Error in the %s field - %s' % (getattr(form, field).label.text, error), 'error')
+# def flash_errors(form):
+#     for field, errors in form.errors.items():
+#         for error in errors:
+#             flash('Error in the %s field - %s' % (getattr(form, field).label.text, error), 'error')
 
 def open_tasks():
     return db.session.query(Task).filter_by(status='1').order_by(Task.due_date.asc())
@@ -115,6 +132,3 @@ def open_tasks():
 def closed_tasks():
     return db.session.query(Task).filter_by(status='0').order_by(Task.due_date.asc())
 
-
-if __name__ == '__main__':
-    app.run()
