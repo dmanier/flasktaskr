@@ -3,9 +3,10 @@ __author__ = 'Damien'
 import os
 import unittest
 
-from views import app, db
-from _config import basedir
-from models import User
+from project import app, db
+from project._config import basedir
+from project.users.models import User
+
 
 TEST_DB = 'test.db'
 name = 'Damien'
@@ -106,6 +107,37 @@ class AllTests(unittest.TestCase):
         response = self.app.get('delete/1/', follow_redirects=True)
         self.assertIn(b'The task was deleted', response.data)
         self.assertNotIn(b'You can only update tasks that belong to you.',response.data)
+
+    def test_users_cannot_see_modify_links_for_tasks_that_are_not_created_by_them(self):
+        self.create_user()
+        self.app.get('tasks/',follow_redirects=True)
+        self.create_task()
+        self.app.get('logout/', follow_redirects=True)
+        self.create_user(name='Fletch',email='fletch@fletch.com',role='admin')
+        response = self.app.get('tasks/', follow_redirects=True)
+        self.assertNotIn(b'Mark as Complete', response.data)
+        self.assertNotIn(b'Delete',response.data)
+
+    def test_users_can_see_modify_links_for_tasks_that_are_created_by_them(self):
+        self.create_user()
+        self.app.get('tasks/',follow_redirects=True)
+        self.create_task()
+        response = self.app.get('tasks/', follow_redirects=True)
+        self.assertIn(b'Mark as Complete', response.data)
+        self.assertIn(b'Delete',response.data)
+
+    def test_admin_can_see_modify_links_for_tasks_that_are_not_created_by_them(self):
+        self.create_user()
+        self.app.get('tasks/',follow_redirects=True)
+        self.create_task()
+        self.app.get('logout/', follow_redirects=True)
+        self.create_user(name='Fletch',email='fletch@fletch.com',role='admin')
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.app.get('tasks/', follow_redirects=True)
+        self.assertIn(b'Mark as Complete', response.data)
+        self.assertIn(b'Delete',response.data)
+
+
 
 if __name__ == '__main__':
     app.main()

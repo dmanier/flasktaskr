@@ -1,14 +1,18 @@
 __author__ = 'Damien'
 
-from views import db
-from models import Task
 from datetime import date
+
+from project import db
+from project.tasks.models import Task
+from project.users.models import User
+from project._config import adminname,adminpass,adminemail
+
 
 db.create_all()
 
-#db.session.add(Task("Finish this tutorial", date(2015,5,15), 10, 1))
+db.session.add(User(adminname, adminemail, adminpass,'admin'))
 
-#db.session.add(Task("Finish Real Python", date(2015,5,15), 10, 1))
+#db.session.add(Task("Finish Real Python", date(2015,5,20),date(2015,5,17), 10, 1,1))
 
 db.session.commit()
 

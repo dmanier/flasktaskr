@@ -3,9 +3,10 @@ __author__ = 'Damien'
 import os
 import unittest
 
-from views import app, db
-from _config import basedir
-from models import User
+from project import app, db
+from project._config import basedir
+from project.users.models import User
+
 
 TEST_DB = 'test.db'
 name = 'Damien'
@@ -22,6 +23,12 @@ class AllTests(unittest.TestCase):
 
     def register(self,name=name, email=email, password=pw, confirm=pw):
         return self.app.post('register/', data=dict(name=name, email=email, password=password,confirm=confirm), follow_redirects=True)
+
+    def create_user(self,name=name,email=email,password=pw,role='user'):
+        new_user = User(name=name, email=email, password=password,role=role)
+        db.session.add(new_user)
+        db.session.commit()
+        return self.app.post('/', data=dict(name=name, password=password), follow_redirects=True)
 
 
     def setUp(self):
@@ -98,6 +105,10 @@ class AllTests(unittest.TestCase):
         users = db.session.query(User).all()
         for user in users:
             self.assertEqual(user.role,'user')
+
+    def test_task_template_displays_logged_in_user_name(self):
+        self.create_user()
+        self.assertIn(name.encode('utf-8'),self.app.get('tasks/',follow_redirects=True).data)
 
 if __name__ == '__main__':
     app.main()

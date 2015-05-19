@@ -1,10 +1,10 @@
 __author__ = 'Damien'
 
-from views import db
-from _config import DATABASE_PATH
-
 import sqlite3
-from datetime import datetime
+
+from views import db
+from project._config import DATABASE_PATH
+
 
 # with sqlite3.connect(DATABASE_PATH) as connection:
 #
